@@ -27,6 +27,7 @@ for arg in "$@"; do
       ;;
   esac
 done
+BUCK2_COMMAND="/Users/marwhal/cargo-target-buck2/release/buck2"
 
 set -e
 
@@ -47,5 +48,11 @@ rm -rf docs/generated
 mkdir -p docs/generated/
 cp -prvf starlark-rust/docs docs/generated/starlark_rust_docs
 "$BUCK2_COMMAND" docs starlark --format=markdown_files --markdown-files-destination-dir=docs/generated --builtins prelude//:prelude.bzl "$@"
+
+if [ -d "docs/generated/starlark/ovr_config" ] 
+then
+    mv docs/generated/starlark/ovr_config/ docs/generated/starlark/prelude/ 
+fi
+
 cp -prvf docs/generated/native/bxl docs/generated/bxl
 rm -rf docs/generated/native/bxl
