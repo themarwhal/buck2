@@ -134,9 +134,8 @@ jobs:
   macos-build:
     description: |
       Build all with cargo for macOS
-    macos:
-      xcode: 13.4.1
-    resource_class: large
+    executor: mac-arm64
+    resource_class: macos.m1.large.gen1
     steps:
       - checkout
       - setup_macos_env
