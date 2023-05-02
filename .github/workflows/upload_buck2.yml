@@ -4,9 +4,29 @@ on:
   push:
     branches:
       - main
+      - upload-prelude-hash
 
 jobs:
+  get_prelude_hash:
+    name: Get the latest prelude hash
+    runs-on: ubuntu-latest
+    steps:
+      - name: Shallow clone buck2-prelude
+        run: git clone --depth=1 https://github.com/facebook/buck2-prelude
+      - name: Get latest commit hash into prelude_hash
+        run: |
+          mkdir artifacts/
+          cd buck2-prelude/
+          git rev-parse HEAD > ../artifacts/prelude_hash
+      - name: Upload prelude_hash
+        uses: actions/upload-artifact@v3
+        with:
+          path: artifacts/prelude_hash
+          name: prelude_hash
+
   build:
+    name: Build Buck2
+    needs: get_prelude_hash
     strategy:
       fail-fast: false
       matrix:
@@ -33,6 +53,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: prelude_hash
       - uses: SebRollen/toml-action@v1.0.1
         id: read_rust_toolchain
         with:
@@ -46,48 +69,36 @@ jobs:
         with:
           prefix-key: buck2-upload
           key: ${{ matrix.target.triple }}
-      - uses: actions-rs/install@v0.1
-        if: matrix.target.cross
+      - uses: ./.github/actions/build-buck2
         with:
-          crate: cross
-          version: latest
-      - name: Build
-        shell: bash
-        env:
-          RUSTFLAGS: "-C strip=debuginfo"
-        run: |
-          if [ -n "${{ matrix.target.cross }}" ]; then
-            CARGO=cross
-          else
-            CARGO=cargo
-          fi
-          $CARGO build --release --bin buck2 --target ${{ matrix.target.triple }}
+          target_triple: ${{ matrix.target.triple }}
+          cross: ${{ matrix.target.cross }}
       - name: Move binary to artifact/ (non-Windows)
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          mkdir artifact
-          zstd -z target/${{ matrix.target.triple }}/release/buck2 -o artifact/buck2-${{ matrix.target.triple }}.zst
+          mkdir artifacts
+          zstd -z target/${{ matrix.target.triple }}/release/buck2 -o artifacts/buck2-${{ matrix.target.triple }}.zst
       - name: Move binary to artifact/ (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          mkdir artifact
-          zstd -z target/${{ matrix.target.triple }}/release/buck2.exe -o artifact/buck2-${{ matrix.target.triple }}.exe.zst
+          mkdir artifacts
+          zstd -z target/${{ matrix.target.triple }}/release/buck2.exe -o artifacts/buck2-${{ matrix.target.triple }}.exe.zst
       - name: Upload (non-Windows)
         if: runner.os != 'Windows'
         uses: actions/upload-artifact@v3
         with:
-          path: artifact/buck2-${{ matrix.target.triple }}.zst
+          path: artifacts/buck2-${{ matrix.target.triple }}.zst
 
       - name: Upload (Windows)
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v3
         with:
-          path: artifact/buck2-${{ matrix.target.triple }}.exe.zst
+          path: artifacts/buck2-${{ matrix.target.triple }}.exe.zst
 
   release:
-    name: Upload Latest Build
+    name: Upload builds to `latest`
     needs: build
     runs-on: ubuntu-latest
     steps:

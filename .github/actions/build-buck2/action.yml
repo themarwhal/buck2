@@ -1,0 +1,29 @@
+name: Build Buck2
+description: Build Buck2
+inputs:
+  target_triple:
+    description: Rust target triple
+    required: true
+  cross:
+    description: True if this is a cross platform build
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions-rs/install@v0.1
+      if: inputs.cross
+      with:
+        crate: cross
+        version: latest
+    - name: Build
+      shell: bash
+      env:
+        RUSTFLAGS: "-C strip=debuginfo"
+      run: |
+        if [ -n "${{ inputs.cross }}" ]; then
+          CARGO=cross
+        else
+          CARGO=cargo
+        fi
+        $CARGO build --release --bin buck2 --target ${{ inputs.target_triple }}
