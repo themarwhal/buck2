@@ -133,3 +133,66 @@ jobs:
           For the public download links of these build artifacts, please see:
            <https://github.com/facebook/buck2/releases/tag/latest>
           EOF
+
+  check_for_monthly_release:
+    needs: release_latest
+    runs-on: ubuntu-latest
+    outputs:
+      needs_release: ${{ !steps.check_for_monthly.outputs.exists }}
+    steps:
+      - id: monthly_release_tag
+        run: |
+          echo "monthly_release_tag=$(date --utc '+%Y.%m.%d')" >> "$GITHUB_OUTPUT"
+      - uses: mukunku/tag-exists-action@v1.2.0
+        id: check_for_monthly
+        with:
+          tag: ${{ steps.monthly_release_tag.outputs.monthly_release_tag }}
+
+  sanity_check_before_monthly_release:
+    needs:
+      - check_for_monthly_release
+    if: ${{ needs.check_for_monthly_release.outputs.needs_release }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - os: 'ubuntu-22.04'
+            triple: 'aarch64-unknown-linux-gnu'
+          - os: 'ubuntu-22.04'
+            triple: 'aarch64-unknown-linux-musl'
+          - os: 'ubuntu-22.04'
+            triple: 'x86_64-unknown-linux-gnu'
+          # - os: 'ubuntu-22.04'
+          #   triple: 'x86_64-unknown-linux-musl' # Doesn't build
+          - os: 'macos-12'
+            triple: 'aarch64-apple-darwin'
+          - os: 'macos-12'
+            triple: 'x86_64-apple-darwin'
+          - os: 'windows-2022'
+            triple: 'x86_64-pc-windows-msvc'
+    runs-on: ${{ matrix.target.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@v1
+      - uses: actions/download-artifact@v3
+        with:
+          path: ${{github.workspace}}/artifacts
+      - name: Unpack `buck2`
+        run: |
+          zstd -d ${{github.workspace}}/artifacts/artifact/buck2-${{ matrix.target.triple }}.zst -o ${{github.workspace}}/buck2
+          chmod +x ${{github.workspace}}/buck2
+      - name: Get prelude hash
+        id: get_prelude_hash
+        run: |
+          echo "prelude_hash=$(cat ${{github.workspace}}/artifacts/prelude_hash/prelude_hash)" >> "$GITHUB_OUTPUT"
+      - name: Build prelude example
+        run: |
+          cd examples/prelude
+          ${{github.workspace}}/buck2 init --git
+          cd prelude/
+          git checkout ${{ steps.get_prelude_hash.outputs.prelude_hash }}
+          cd ../
+          ${{github.workspace}}/buck2 build //...
