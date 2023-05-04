@@ -80,11 +80,11 @@ jobs:
         shell: bash
         run: |
           if [ -n "${{ matrix.target.is_windows }}" ]; then
-            echo "cargo_out=${{ github.workspace }}/target/${{ matrix.target.triple }}/release/buck2.exe" >> "$GITHUB_OUTPUT"
-            echo "buck2_zst=${{ github.workspace }}/artifacts/buck2-${{ matrix.target.triple }}.exe.zst" >> "$GITHUB_OUTPUT"
+            echo "cargo_out=target/${{ matrix.target.triple }}/release/buck2.exe" >> "$GITHUB_OUTPUT"
+            echo "buck2_zst=artifacts/buck2-${{ matrix.target.triple }}.exe.zst" >> "$GITHUB_OUTPUT"
           else
-            echo "cargo_out=${{ github.workspace }}/target/${{ matrix.target.triple }}/release/buck2" >> "$GITHUB_OUTPUT"
-            echo "buck2_zst=${{ github.workspace }}/artifacts/buck2-${{ matrix.target.triple }}.zst" >> "$GITHUB_OUTPUT"
+            echo "cargo_out=target/${{ matrix.target.triple }}/release/buck2" >> "$GITHUB_OUTPUT"
+            echo "buck2_zst=artifacts/buck2-${{ matrix.target.triple }}.zst" >> "$GITHUB_OUTPUT"
           fi
       - name: Build
         shell: bash
@@ -106,7 +106,7 @@ jobs:
           cd prelude
           git checkout ${{ needs.get_prelude_hash.outputs.prelude_hash }}
           cd ../
-          ${{ steps.set_variables.outputs.cargo_out }} build //rust/...
+          ../../${{ steps.set_variables.outputs.cargo_out }} build //rust/...
       - name: Move binary to artifacts/
         shell: bash
         run: |
