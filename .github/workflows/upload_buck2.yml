@@ -6,6 +6,23 @@ on:
       - main
 
 jobs:
+  get_prelude_hash:
+    name: Get the latest prelude hash
+    runs-on: ubuntu-latest
+    steps:
+      - name: Shallow clone buck2-prelude
+        run: git clone --depth=1 https://github.com/facebook/buck2-prelude
+      - name: Get latest commit hash into prelude_hash
+        run: |
+          mkdir artifacts/
+          cd buck2-prelude/
+          git rev-parse HEAD > ../artifacts/prelude_hash
+      - name: Upload prelude_hash
+        uses: actions/upload-artifact@v3
+        with:
+          path: artifacts/prelude_hash
+          name: prelude_hash
+
   build:
     strategy:
       fail-fast: false
@@ -62,33 +79,35 @@ jobs:
             CARGO=cargo
           fi
           $CARGO build --release --bin buck2 --target ${{ matrix.target.triple }}
-      - name: Move binary to artifact/ (non-Windows)
+      - name: Move binary to artifacts/ (non-Windows)
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          mkdir artifact
-          zstd -z target/${{ matrix.target.triple }}/release/buck2 -o artifact/buck2-${{ matrix.target.triple }}.zst
-      - name: Move binary to artifact/ (Windows)
+          mkdir artifacts
+          zstd -z target/${{ matrix.target.triple }}/release/buck2 -o artifacts/buck2-${{ matrix.target.triple }}.zst
+      - name: Move binary to artifacts/ (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          mkdir artifact
-          zstd -z target/${{ matrix.target.triple }}/release/buck2.exe -o artifact/buck2-${{ matrix.target.triple }}.exe.zst
+          mkdir artifacts
+          zstd -z target/${{ matrix.target.triple }}/release/buck2.exe -o artifacts/buck2-${{ matrix.target.triple }}.exe.zst
       - name: Upload (non-Windows)
         if: runner.os != 'Windows'
         uses: actions/upload-artifact@v3
         with:
-          path: artifact/buck2-${{ matrix.target.triple }}.zst
+          path: artifacts/buck2-${{ matrix.target.triple }}.zst
 
       - name: Upload (Windows)
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v3
         with:
-          path: artifact/buck2-${{ matrix.target.triple }}.exe.zst
+          path: artifacts/buck2-${{ matrix.target.triple }}.exe.zst
 
-  release:
+  release_latest:
     name: Upload Latest Build
-    needs: build
+    needs:
+      - build
+      - get_prelude_hash
     runs-on: ubuntu-latest
     steps:
       - run: mkdir ${{github.workspace}}/artifacts
@@ -103,7 +122,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'latest'
-          files: ${{github.workspace}}/artifacts/**/buck2-*.zst
+          files: |
+            ${{github.workspace}}/artifacts/**/buck2-*.zst
+            ${{github.workspace}}/artifacts/**/prelude_hash
           rm: true
       - name: Summary
         run: |
