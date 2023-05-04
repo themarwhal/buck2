@@ -106,7 +106,7 @@ jobs:
           cd prelude
           git checkout ${{ needs.get_prelude_hash.outputs.prelude_hash }}
           cd ../
-          ${{ steps.set_variables.outputs.cargo_out }} build //...
+          ${{ steps.set_variables.outputs.cargo_out }} build //rust/...
       - name: Move binary to artifacts/
         shell: bash
         run: |
