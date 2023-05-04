@@ -46,6 +46,7 @@ jobs:
           #   triple: 'x86_64-unknown-linux-musl' # Doesn't build
           - os: 'macos-12'
             triple: 'aarch64-apple-darwin'
+            cross: true
           - os: 'macos-12'
             triple: 'x86_64-apple-darwin'
           - os: 'windows-2022'
@@ -101,15 +102,15 @@ jobs:
         if: ${{ !matrix.target.cross }}
         shell: bash
         run: |
+          BUCK2="$(pwd)/${{ steps.set_variables.outputs.cargo_out }}"
           cd examples/prelude
-          ${{ steps.set_variables.outputs.cargo_out }} init --git
+          "$BUCK2" init --git
           cd prelude
           git checkout ${{ needs.get_prelude_hash.outputs.prelude_hash }}
           cd ../
-          set BUCK2="../../${{ steps.set_variables.outputs.cargo_out }}"
-          $BUCK2 build //rust/...
-          $BUCK2 build //cpp/...
-          $BUCK2 build //python/...
+          "$BUCK2" build //rust/...
+          "$BUCK2" build //cpp/...
+          "$BUCK2" build //python/...
       - name: Move binary to artifacts/
         shell: bash
         run: |
