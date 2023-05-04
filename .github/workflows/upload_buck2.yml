@@ -98,10 +98,15 @@ jobs:
           fi
           $CARGO build --release --bin buck2 --target ${{ matrix.target.triple }}
       - name: Sanity check with examples/prelude
+        if: ${{ !matrix.target.cross }}
         shell: bash
         run: |
           cd examples/prelude
           ${{ steps.set_variables.outputs.cargo_out }} init --git
+          cd prelude
+          git checkout ${{ needs.get_prelude_hash.outputs.prelude_hash }}
+          cd ../
+          ${{ steps.set_variables.outputs.cargo_out }} build //...
       - name: Move binary to artifacts/
         shell: bash
         run: |
