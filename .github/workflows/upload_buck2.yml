@@ -124,7 +124,7 @@ jobs:
           tag: 'latest'
           files: |
             ${{github.workspace}}/artifacts/**/buck2-*.zst
-            ${{github.workspace}}/artifacts/**/prelude_hash
+            ${{github.workspace}}/artifacts/prelude_hash/prelude_hash
           rm: true
       - name: Summary
         run: |
