@@ -152,12 +152,41 @@ jobs:
     needs: release_latest
     runs-on: ubuntu-latest
     outputs:
-      needs_release: ${{ !steps.check_for_monthly.outputs.exists }}
+      needs_release: ${{ steps.check_for_monthly.outputs.exists }}
+      tag: ${{ steps.monthly_release_tag.outputs.monthly_release_tag }}
     steps:
       - id: monthly_release_tag
         run: |
-          echo "monthly_release_tag=$(date --utc '+%Y.%m.%d')" >> "$GITHUB_OUTPUT"
+          echo "monthly_release_tag=$(date --utc '+%Y.%m')" >> "$GITHUB_OUTPUT"
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check_for_monthly
         with:
           tag: ${{ steps.monthly_release_tag.outputs.monthly_release_tag }}
+
+  release_monthly:
+    name: Release monthly tag
+    needs: release_latest
+    runs-on: ubuntu-latest
+    if: ${{ !needs.check_for_monthly_release.outputs.needs_release }}
+    steps:
+      - run: mkdir ${{github.workspace}}/artifacts
+      - uses: actions/download-artifact@v3
+        with:
+          path: ${{github.workspace}}/artifacts
+      - name: Display structure of downloaded files
+        run: |
+          ls -R
+        working-directory: ${{github.workspace}}/artifacts
+      - uses: pyTooling/Actions/releaser@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.check_for_monthly_release.outputs.tag }}
+          files: ${{github.workspace}}/artifacts/**
+          rm: true
+      - name: Summary
+        run: |
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          # `${{ needs.check_for_monthly_release.outputs.tag }}` Release Complete! :rocket:
+          For the public download links of these build artifacts, please see:
+           <https://github.com/facebook/buck2/releases/tag/${{ needs.check_for_monthly_release.outputs.tag }}>
+          EOF
