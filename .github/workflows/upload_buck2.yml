@@ -1,4 +1,4 @@
-name: Build and upload Buck2 binaries
+name: Build, upload, and tag `buck2`
 
 on:
   push:
@@ -121,9 +121,6 @@ jobs:
 
   release_latest:
     name: Release `latest` tag
-    needs:
-      - build
-      - get_prelude_hash
     runs-on: ubuntu-latest
     steps:
       - run: mkdir ${{github.workspace}}/artifacts
@@ -150,7 +147,9 @@ jobs:
 
   check_for_monthly_release:
     name: Check if there's a release for this month
-    needs: release_latest
+    needs:
+      - build
+      - get_prelude_hash
     runs-on: ubuntu-latest
     outputs:
       needs_release: ${{ steps.check_for_monthly.outputs.exists }}
@@ -175,12 +174,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           path: ${{github.workspace}}/artifacts
-      - name: Display structure of downloaded files
-        run: |
-          ls -R
-          echo ${{ needs.check_for_monthly_release.outputs.tag }}
-          echo ${{ needs.check_for_monthly_release.outputs.needs_release }}
-        working-directory: ${{github.workspace}}/artifacts
       - uses: pyTooling/Actions/releaser@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
