@@ -180,7 +180,7 @@ jobs:
       - uses: pyTooling/Actions/releaser@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ needs.check_for_monthly_release.outputs.tag }}
+          tag: '${{ needs.check_for_monthly_release.outputs.tag }}'
           files: ${{github.workspace}}/artifacts/**
           rm: true
       - name: Summary
