@@ -149,6 +149,7 @@ jobs:
           EOF
 
   check_for_monthly_release:
+    name: Check if there's a release for this month
     needs: release_latest
     runs-on: ubuntu-latest
     outputs:
