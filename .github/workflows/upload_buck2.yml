@@ -122,7 +122,7 @@ jobs:
           path: ${{ steps.set_variables.outputs.buck2_zst }}
 
   release_latest:
-    name: Upload Latest Build
+    name: Release `latest` tag
     needs:
       - build
       - get_prelude_hash
@@ -140,9 +140,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'latest'
-          files: |
-            ${{github.workspace}}/artifacts/**/buck2-*.zst
-            ${{github.workspace}}/artifacts/prelude_hash/prelude_hash
+          files: ${{github.workspace}}/artifacts/**
           rm: true
       - name: Summary
         run: |
