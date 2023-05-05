@@ -108,9 +108,7 @@ jobs:
           cd prelude
           git checkout ${{ needs.get_prelude_hash.outputs.prelude_hash }}
           cd ../
-          "$BUCK2" build //rust/...
-          "$BUCK2" build //cpp/...
-          "$BUCK2" build //python/...
+          "$BUCK2" build //rust/... //cpp/... //python/... -v=2
       - name: Move binary to artifacts/
         shell: bash
         run: |
