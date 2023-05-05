@@ -30,6 +30,9 @@ jobs:
   build:
     needs:
       - get_prelude_hash
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
     strategy:
       fail-fast: false
       matrix:
@@ -67,6 +70,8 @@ jobs:
         with:
           toolchain: ${{ steps.read_rust_toolchain.outputs.value }}
           targets: ${{ matrix.target.triple }}
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: buck2-upload
@@ -143,7 +148,7 @@ jobs:
       - name: Summary
         run: |
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          # Latest Build Complete! :rocket:
+          # `latest` Build Complete! :rocket:
           For the public download links of these build artifacts, please see:
            <https://github.com/facebook/buck2/releases/tag/latest>
           EOF
