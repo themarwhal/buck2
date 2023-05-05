@@ -159,6 +159,7 @@ jobs:
       - id: monthly_release_tag
         run: |
           echo "monthly_release_tag=$(date --utc '+%Y.%m')" >> "$GITHUB_OUTPUT"
+          cat $GITHUB_OUTPUT
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check_for_monthly
         with:
@@ -177,6 +178,7 @@ jobs:
       - name: Display structure of downloaded files
         run: |
           ls -R
+          echo ${{ needs.check_for_monthly_release.outputs.tag }}
         working-directory: ${{github.workspace}}/artifacts
       - uses: pyTooling/Actions/releaser@main
         with:
