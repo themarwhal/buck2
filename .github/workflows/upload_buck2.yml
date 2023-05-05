@@ -167,7 +167,7 @@ jobs:
 
   release_monthly:
     name: Release monthly tag
-    needs: release_latest
+    needs: check_for_monthly_release
     runs-on: ubuntu-latest
     if: ${{ !needs.check_for_monthly_release.outputs.needs_release }}
     steps:
@@ -179,6 +179,7 @@ jobs:
         run: |
           ls -R
           echo ${{ needs.check_for_monthly_release.outputs.tag }}
+          echo ${{ needs.check_for_monthly_release.outputs.needs_release }}
         working-directory: ${{github.workspace}}/artifacts
       - uses: pyTooling/Actions/releaser@main
         with:
