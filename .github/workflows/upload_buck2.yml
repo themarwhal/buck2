@@ -30,9 +30,6 @@ jobs:
   build:
     needs:
       - get_prelude_hash
-    env:
-      SCCACHE_GHA_ENABLED: "true"
-      RUSTC_WRAPPER: "sccache"
     strategy:
       fail-fast: false
       matrix:
@@ -70,8 +67,6 @@ jobs:
         with:
           toolchain: ${{ steps.read_rust_toolchain.outputs.value }}
           targets: ${{ matrix.target.triple }}
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: buck2-upload
@@ -160,7 +155,7 @@ jobs:
       - get_prelude_hash
     runs-on: ubuntu-latest
     outputs:
-      needs_release: ${{ steps.check_for_monthly.outputs.exists }}
+      needs_release: ${{ !steps.check_for_monthly.outputs.exists }}
       tag: ${{ steps.monthly_release_tag.outputs.monthly_release_tag }}
     steps:
       - id: monthly_release_tag
@@ -176,7 +171,7 @@ jobs:
     name: Release monthly tag
     needs: check_for_monthly_release
     runs-on: ubuntu-latest
-    if: ${{ !needs.check_for_monthly_release.outputs.needs_release }}
+    if: ${{ needs.check_for_monthly_release.outputs.needs_release }}
     steps:
       - run: mkdir ${{github.workspace}}/artifacts
       - uses: actions/download-artifact@v3
