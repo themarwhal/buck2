@@ -159,9 +159,9 @@ jobs:
     steps:
       - id: release_tag
         run: |
-          export base=$(date +%Y.%m)
+          export base=$(date +%Y-%m)
           export day=$(date +%d)
-          if (( day < 15 )); then echo "tag=${base}.01" >> "$GITHUB_OUTPUT"; else echo "tag=${base}.15" >> "$GITHUB_OUTPUT"; fi;
+          if (( day < 15 )); then echo "tag=${base}.1" >> "$GITHUB_OUTPUT"; else echo "tag=${base}.2" >> "$GITHUB_OUTPUT"; fi;
           cat $GITHUB_OUTPUT
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check_for_bi_monthly
@@ -188,7 +188,7 @@ jobs:
       - name: Summary
         run: |
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          # `${{ needs.check_for_bi_monthly_release.outputs.tag }}` Release Complete! :rocket:
+          # `${{ needs.check_for_bi_monthly_release.outputs.tag }}` Bi-monthly Release Complete! :rocket:
           For the public download links of these build artifacts, please see:
            <https://github.com/facebook/buck2/releases/tag/${{ needs.check_for_bi_monthly_release.outputs.tag }}>
           EOF
