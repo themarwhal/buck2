@@ -169,7 +169,9 @@ jobs:
 
   release_bi_monthly:
     name: Release bi-monthly tag
-    needs: check_for_bi_monthly_release
+    needs:
+      - check_for_bi_monthly_release
+      - build
     runs-on: ubuntu-latest
     if: ${{ needs.check_for_bi_monthly_release.outputs.needs_release }}
     steps:

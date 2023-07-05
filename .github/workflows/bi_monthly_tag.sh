@@ -10,4 +10,4 @@ else
   tag="${year}.${month}.15"
 fi
 
-echo "$tag"
+printf "$tag"
