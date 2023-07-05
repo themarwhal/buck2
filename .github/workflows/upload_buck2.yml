@@ -151,15 +151,15 @@ jobs:
   check_for_bi_monthly_release:
     name: Check if there's a release for this half of the month already
     runs-on: ubuntu-latest
-    needs:
-      - build
+    # needs:
+    #   - build
     outputs:
       needs_release: ${{ !steps.check_for_bi_monthly.outputs.exists }}
       tag: ${{ steps.release_tag.outputs.tag }}
     steps:
       - id: release_tag
         run: |
-          tag=$(date +%Y.%m); day=$(date +%d); if (( day < 15 )); then echo "tag=${tag}.01"; else echo "tag=${tag}.15"; fi;>> "$GITHUB_OUTPUT"
+          base=$(date +%Y.%m); day=$(date +%d); if (( day < 15 )); then echo "tag=${base}.01"; else echo "tag=${base}.15"; fi;>> "$GITHUB_OUTPUT"
           cat $GITHUB_OUTPUT
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check_for_bi_monthly
