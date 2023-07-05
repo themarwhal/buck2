@@ -160,7 +160,7 @@ jobs:
           fetch-depth: 0
       - id: release_tag
         run: |
-          ${{github.workspace}}/.github/workflows/bi_monthly_tag.sh >> "$GITHUB_OUTPUT"
+          tag=$(date +%Y.%m); day=$(date +%d); if (( day <= 15 )); then echo "${tag}.01"; else echo "${tag}.15"; fi;>> "$GITHUB_OUTPUT"
           cat $GITHUB_OUTPUT
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check_for_bi_monthly
