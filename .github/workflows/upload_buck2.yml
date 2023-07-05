@@ -155,11 +155,11 @@ jobs:
       - build
     outputs:
       needs_release: ${{ !steps.check_for_bi_monthly.outputs.exists }}
-      tag: ${{ steps.release_tag.outputs.release_tag }}
+      tag: ${{ steps.release_tag.outputs.tag }}
     steps:
       - id: release_tag
         run: |
-          tag=$(date +%Y.%m); day=$(date +%d); if (( day <= 15 )); then echo "tag=${tag}.01"; else echo "tag=${tag}.15"; fi;>> "$GITHUB_OUTPUT"
+          tag=$(date +%Y.%m); day=$(date +%d); if (( day < 15 )); then echo "tag=${tag}.01"; else echo "tag=${tag}.15"; fi;>> "$GITHUB_OUTPUT"
           cat $GITHUB_OUTPUT
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check_for_bi_monthly
