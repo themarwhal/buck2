@@ -151,8 +151,8 @@ jobs:
   check_for_bi_monthly_release:
     name: Check if there's a release for this half of the month already
     runs-on: ubuntu-latest
-    # needs:
-    #   - build
+    needs:
+      - build
     outputs:
       needs_release: ${{ !steps.check_for_bi_monthly.outputs.exists }}
       tag: ${{ steps.release_tag.outputs.tag }}
