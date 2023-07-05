@@ -150,14 +150,14 @@ jobs:
 
   check_for_bi_monthly_release:
     name: Check if there's a release for this half of the month already
-    needs:
-      - build
-      - get_prelude_hash
     runs-on: ubuntu-latest
     outputs:
       needs_release: ${{ !steps.check_for_bi_monthly.outputs.exists }}
       tag: ${{ steps.release_tag.outputs.release_tag }}
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - id: release_tag
         run: |
           ${{github.workspace}}/.github/workflows/bi_monthly_tag.sh >> "$GITHUB_OUTPUT"
