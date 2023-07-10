@@ -44,14 +44,14 @@ jobs:
             triple: 'x86_64-unknown-linux-gnu'
           # - os: 'ubuntu-22.04'
           #   triple: 'x86_64-unknown-linux-musl' # Doesn't build
-          - os: 'macos-12'
-            triple: 'aarch64-apple-darwin'
-            cross: true
-          - os: 'macos-12'
-            triple: 'x86_64-apple-darwin'
-          - os: 'windows-2022'
-            triple: 'x86_64-pc-windows-msvc'
-            is_windows: true
+          # - os: 'macos-12'
+          #   triple: 'aarch64-apple-darwin'
+          #   cross: true
+          # - os: 'macos-12'
+          #   triple: 'x86_64-apple-darwin'
+          # - os: 'windows-2022'
+          #   triple: 'x86_64-pc-windows-msvc'
+          #   is_windows: true
     runs-on: ${{ matrix.target.os }}
 
     steps:
@@ -126,27 +126,14 @@ jobs:
       - get_prelude_hash
     runs-on: ubuntu-latest
     steps:
-      - run: mkdir ${{github.workspace}}/artifacts
-      - uses: actions/download-artifact@v3
+      - uses: actions/checkout@v3
         with:
-          path: ${{github.workspace}}/artifacts
-      - name: Display structure of downloaded files
-        run: |
-          ls -R
-        working-directory: ${{github.workspace}}/artifacts
-      - uses: pyTooling/Actions/releaser@adef08d3bdef092282614f3b683897cefae82ee3 # v0.4.6
+          fetch-depth: 0
+      # Publish a new tag and upload all aritfacts from `build` and `get_prelude_hash`
+      - uses: ./.github/actions/publish_tag
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'latest'
-          files: ${{github.workspace}}/artifacts/**
-          rm: true
-      - name: Summary
-        run: |
-          cat <<EOF >> $GITHUB_STEP_SUMMARY
-          # "latest" Build Complete! :rocket:
-          For the public download links of these build artifacts, please see:
-           <https://github.com/facebook/buck2/releases/tag/latest>
-          EOF
+          tag: "latest"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   check_for_bi_monthly_release:
     name: Check if there's a release for this half of the month already
@@ -198,21 +185,11 @@ jobs:
     # Only perform this action if check_for_bi_monthly_release set a tag output
     if: ${{ needs.check_for_bi_monthly_release.outputs.tag }}
     steps:
-      - run : |
-          echo "Going to tag '${{ needs.check_for_bi_monthly_release.outputs.tag }}'!"
-      - run: mkdir ${{github.workspace}}/artifacts
-      - uses: actions/download-artifact@v3
+      - uses: actions/checkout@v3
         with:
-          path: ${{github.workspace}}/artifacts
-      - uses: pyTooling/Actions/releaser@adef08d3bdef092282614f3b683897cefae82ee3 # v0.4.6
+          fetch-depth: 0
+      # Publish a new tag and upload all aritfacts from `build` and `get_prelude_hash`
+      - uses: ./.github/actions/publish_tag
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: '${{ needs.check_for_bi_monthly_release.outputs.tag }}'
-          files: ${{github.workspace}}/artifacts/**
-      - name: Summary
-        run: |
-          cat <<EOF >> $GITHUB_STEP_SUMMARY
-          # `${{ needs.check_for_bi_monthly_release.outputs.tag }}` Bi-monthly Release Complete! :rocket:
-          For the public download links of these build artifacts, please see:
-           <https://github.com/facebook/buck2/releases/tag/${{ needs.check_for_bi_monthly_release.outputs.tag }}>
-          EOF
+          tag: ${{ needs.check_for_bi_monthly_release.outputs.tag }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
