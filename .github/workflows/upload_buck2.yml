@@ -13,7 +13,7 @@ jobs:
       prelude_hash: ${{ steps.get_latest_prelude_hash.outputs.prelude_hash }}
     steps:
       - name: Shallow clone buck2-prelude
-        run: git clone --depth=1 https://github.com/themarwhal/buck2-prelude
+        run: git clone --depth=1 https://github.com/facebook/buck2-prelude
       - name: Get latest commit hash into prelude_hash
         id: get_latest_prelude_hash
         run: |
