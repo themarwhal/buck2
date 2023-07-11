@@ -13,7 +13,7 @@ jobs:
       prelude_hash: ${{ steps.get_latest_prelude_hash.outputs.prelude_hash }}
     steps:
       - name: Shallow clone buck2-prelude
-        run: git clone --depth=1 https://github.com/facebook/buck2-prelude
+        run: git clone --depth=1 https://github.com/themarwhal/buck2-prelude
       - name: Get latest commit hash into prelude_hash
         id: get_latest_prelude_hash
         run: |
@@ -156,7 +156,7 @@ jobs:
       - id: get_tags_count
         name: Count the number of tags already published for this month
         run: |
-          url="https://api.github.com/repos/facebook/buck2/tags"
+          url="https://api.github.com/repos/themarwhal/buck2/tags"
           tags=$(curl -fsSL "$url" |  jq -r ".[].name" | grep "${{ steps.get_date.outputs.base }}" || true )
           echo "Found the following tags for this month: '$tags'"
           # Count the number of existing tags with the same year and month.
